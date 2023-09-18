@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <variant>
+#include <unordered_map>
 
 #include "rapidjson/document.h"
 #include "rapidjson/istreamwrapper.h"
@@ -15,6 +16,7 @@ using Str = std::string;
 using Bool = bool;
 
 using Value = std::variant<Int, Str, Bool>;
+using Context = std::unordered_map<std::string, Value>;
 
 enum class Kind
 {
@@ -24,6 +26,8 @@ enum class Kind
     Print,
     Binary,
     If,
+    Let,
+    Var,
 };
 
 enum class BinaryOp

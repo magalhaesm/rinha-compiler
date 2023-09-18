@@ -10,6 +10,7 @@ std::unordered_map<std::string, Kind> kindTable = {
 
     { "Int", Kind::Int },     { "Str", Kind::Str },       { "Bool", Kind::Bool },
     { "Print", Kind::Print }, { "Binary", Kind::Binary }, { "If", Kind::If },
+    { "Let", Kind::Let },     { "Var", Kind::Var },
 };
 
 std::unordered_map<std::string, BinaryOp> binaryOpTable = {
@@ -41,7 +42,7 @@ Document parse(const std::string& filePath)
     return document;
 }
 
-Value eval(const Node& node)
+Value eval(const Node& node, Context& ctx)
 {
     switch (match(node))
     {
@@ -52,22 +53,40 @@ Value eval(const Node& node)
     case Kind::Bool:
         return Type::Bool(node);
     case Kind::Print:
-        return print(eval(node["value"]));
+        return print(eval(node["value"], ctx));
     case Kind::Binary:
-        return evalBinary(node);
+        return evalBinary(node, ctx);
     case Kind::If:
     {
-        auto condition = std::get<Bool>(eval(node["condition"]));
-        return condition == true ? eval(node["then"]) : eval(node["otherwise"]);
+        auto condition = std::get<Bool>(eval(node["condition"], ctx));
+        if (condition == true)
+        {
+            return eval(node["then"], ctx);
+        }
+        return eval(node["otherwise"], ctx);
+    }
+    case Kind::Let:
+    {
+        auto name = node["name"]["text"].GetString();
+        auto value = eval(node["value"], ctx);
+
+        ctx[name] = value;
+
+        return hasNext(node) ? eval(node["next"], ctx) : 0;
+    }
+    case Kind::Var:
+    {
+        auto text = node["text"].GetString();
+        return ctx[text];
     }
     }
     throw std::runtime_error("Unrecognized term");
 }
 
-Value evalBinary(const Node& node)
+Value evalBinary(const Node& node, Context& ctx)
 {
-    auto lhs = eval(node["lhs"]);
-    auto rhs = eval(node["rhs"]);
+    auto lhs = eval(node["lhs"], ctx);
+    auto rhs = eval(node["rhs"], ctx);
 
     switch (matchOp(node))
     {
@@ -109,6 +128,16 @@ Kind match(const Node& node)
 BinaryOp matchOp(const Node& node)
 {
     return binaryOpTable[node["op"].GetString()];
+}
+
+bool hasNext(const Node& node)
+{
+    auto itr = node.FindMember("next");
+    if (itr != node.MemberEnd())
+    {
+        return true;
+    }
+    return false;
 }
 
 Value print(const Value& val)

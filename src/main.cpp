@@ -14,7 +14,8 @@ int main(int argc, char** argv)
     try
     {
         Document parsed = parse(argv[1]);
-        eval(parsed["expression"]);
+        Context ctx;
+        eval(parsed["expression"], ctx);
     }
     catch (const std::exception& e)
     {
