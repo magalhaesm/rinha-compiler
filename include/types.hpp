@@ -23,6 +23,7 @@ enum class Kind
     Bool,
     Print,
     Binary,
+    If,
 };
 
 enum class BinaryOp

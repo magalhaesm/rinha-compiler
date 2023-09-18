@@ -1,0 +1,87 @@
+{
+  "name": "examples/if.rinha",
+  "expression": {
+    "kind": "Print",
+    "value": {
+      "kind": "If",
+      "condition": {
+        "kind": "Binary",
+        "lhs": {
+          "kind": "Binary",
+          "lhs": {
+            "kind": "Int",
+            "value": 1,
+            "location": {
+              "start": 10,
+              "end": 11,
+              "filename": "examples/if.rinha"
+            }
+          },
+          "op": "Add",
+          "rhs": {
+            "kind": "Int",
+            "value": 1,
+            "location": {
+              "start": 14,
+              "end": 15,
+              "filename": "examples/if.rinha"
+            }
+          },
+          "location": {
+            "start": 10,
+            "end": 15,
+            "filename": "examples/if.rinha"
+          }
+        },
+        "op": "Eq",
+        "rhs": {
+          "kind": "Int",
+          "value": 2,
+          "location": {
+            "start": 19,
+            "end": 20,
+            "filename": "examples/if.rinha"
+          }
+        },
+        "location": {
+          "start": 10,
+          "end": 20,
+          "filename": "examples/if.rinha"
+        }
+      },
+      "then": {
+        "kind": "Str",
+        "value": "funfa",
+        "location": {
+          "start": 26,
+          "end": 33,
+          "filename": "examples/if.rinha"
+        }
+      },
+      "otherwise": {
+        "kind": "Str",
+        "value": "deu ruim",
+        "location": {
+          "start": 45,
+          "end": 55,
+          "filename": "examples/if.rinha"
+        }
+      },
+      "location": {
+        "start": 6,
+        "end": 57,
+        "filename": "examples/if.rinha"
+      }
+    },
+    "location": {
+      "start": 0,
+      "end": 58,
+      "filename": "examples/if.rinha"
+    }
+  },
+  "location": {
+    "start": 0,
+    "end": 58,
+    "filename": "examples/if.rinha"
+  }
+}
