@@ -1,0 +1,25 @@
+{
+  "name": "examples/print.rinha",
+  "expression": {
+    "kind": "Print",
+    "value": {
+      "kind": "Str",
+      "value": "42",
+      "location": {
+        "start": 6,
+        "end": 10,
+        "filename": "examples/print.rinha"
+      }
+    },
+    "location": {
+      "start": 0,
+      "end": 11,
+      "filename": "examples/print.rinha"
+    }
+  },
+  "location": {
+    "start": 0,
+    "end": 11,
+    "filename": "examples/print.rinha"
+  }
+}
