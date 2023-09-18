@@ -10,8 +10,8 @@ vpath %.cpp $(SRC_DIRS)
 CXX      := c++
 CXXFLAGS := -Wall -Wextra -Werror -std=c++17 -g
 
-INCS := types.hpp interpreter.hpp
-SRCS := types.cpp interpreter.cpp main.cpp
+INCS := types.hpp binaryOp.hpp interpreter.hpp
+SRCS := types.cpp binaryOp.cpp interpreter.cpp main.cpp
 OBJS := $(addprefix $(OBJ_DIR)/, $(SRCS:.cpp=.o))
 
 all: $(NAME)

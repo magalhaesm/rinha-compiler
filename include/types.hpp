@@ -22,6 +22,7 @@ enum class Kind
     Str,
     Bool,
     Print,
+    Binary,
 };
 
 enum class BinaryOp

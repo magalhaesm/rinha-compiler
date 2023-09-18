@@ -1,16 +1,24 @@
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <stdexcept>
 #include <unordered_map>
 
+#include "binaryOp.hpp"
 #include "interpreter.hpp"
 
 std::unordered_map<std::string, Kind> kindTable = {
 
-    { "Int", Kind::Int },
-    { "Str", Kind::Str },
-    { "Bool", Kind::Bool },
-    { "Print", Kind::Print },
+    { "Int", Kind::Int },     { "Str", Kind::Str },       { "Bool", Kind::Bool },
+    { "Print", Kind::Print }, { "Binary", Kind::Binary },
+};
+
+std::unordered_map<std::string, BinaryOp> binaryOpTable = {
+
+    { "Add", BinaryOp::Add }, { "Sub", BinaryOp::Sub }, { "Mul", BinaryOp::Mul },
+    { "Div", BinaryOp::Div }, { "Rem", BinaryOp::Rem }, { "Eq", BinaryOp::Eq },
+    { "Neq", BinaryOp::Neq }, { "Lt", BinaryOp::Lt },   { "Gt", BinaryOp::Gt },
+    { "Lte", BinaryOp::Lte }, { "Gte", BinaryOp::Gte }, { "And", BinaryOp::And },
+    { "Or", BinaryOp::Or },
 };
 
 Document parse(const std::string& filePath)
@@ -45,13 +53,57 @@ Value eval(const Node& node)
         return Type::Bool(node);
     case Kind::Print:
         return print(eval(node["value"]));
+    case Kind::Binary:
+        return evalBinary(node);
     }
     throw std::runtime_error("Unrecognized expression");
+}
+
+Value evalBinary(const Node& node)
+{
+    auto lhs = eval(node["lhs"]);
+    auto rhs = eval(node["rhs"]);
+
+    switch (matchOp(node))
+    {
+    case BinaryOp::Add:
+        return lhs + rhs;
+    case BinaryOp::Sub:
+        return lhs - rhs;
+    case BinaryOp::Mul:
+        return lhs * rhs;
+    case BinaryOp::Div:
+        return lhs / rhs;
+    case BinaryOp::Rem:
+        return lhs % rhs;
+    case BinaryOp::Eq:
+        return lhs == rhs;
+    case BinaryOp::Neq:
+        return lhs != rhs;
+    case BinaryOp::Lt:
+        return lhs < rhs;
+    case BinaryOp::Gt:
+        return lhs > rhs;
+    case BinaryOp::Lte:
+        return lhs <= rhs;
+    case BinaryOp::Gte:
+        return lhs >= rhs;
+    case BinaryOp::And:
+        return lhs && rhs;
+    case BinaryOp::Or:
+        return lhs || rhs;
+    }
+    throw std::runtime_error("Unrecognized operation");
 }
 
 Kind match(const Node& node)
 {
     return kindTable[node["kind"].GetString()];
+}
+
+BinaryOp matchOp(const Node& node)
+{
+    return binaryOpTable[node["op"].GetString()];
 }
 
 Value print(const Value& val)
