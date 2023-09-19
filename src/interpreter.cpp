@@ -1,4 +1,6 @@
+#include <memory>
 #include <fstream>
+#include <variant>
 #include <iostream>
 #include <stdexcept>
 #include <unordered_map>
@@ -9,10 +11,11 @@
 
 std::unordered_map<std::string, Kind> kindTable = {
 
-    { "Int", Kind::Int },     { "Str", Kind::Str },       { "Bool", Kind::Bool },
-    { "Print", Kind::Print }, { "Binary", Kind::Binary }, { "If", Kind::If },
-    { "Let", Kind::Let },     { "Var", Kind::Var },       { "Function", Kind::Function },
-    { "Call", Kind::Call },
+    { "Int", Kind::Int },       { "Str", Kind::Str },       { "Bool", Kind::Bool },
+    { "Print", Kind::Print },   { "Binary", Kind::Binary }, { "If", Kind::If },
+    { "Let", Kind::Let },       { "Var", Kind::Var },       { "Function", Kind::Function },
+    { "Call", Kind::Call },     { "Tuple", Kind::Tuple },   { "First", Kind::First },
+    { "Second", Kind::Second },
 };
 
 std::unordered_map<std::string, BinaryOp> binaryOpTable = {
@@ -90,8 +93,32 @@ Value eval(const Node& node, Context& ctx)
 
         return fn.call(args);
     }
+    case Kind::Tuple:
+    {
+        return Tuple{
+
+            std::make_shared<Value>(eval(node["first"], ctx)),
+            std::make_shared<Value>(eval(node["second"], ctx))
+        };
+    }
+    case Kind::First:
+    {
+        auto tuple = std::get<Tuple>(eval(node["value"], ctx));
+        return *(tuple.first);
+    }
+    case Kind::Second:
+    {
+        auto tuple = std::get<Tuple>(eval(node["value"], ctx));
+        return *(tuple.second);
+    }
     }
     throw std::runtime_error("Unrecognized term");
+}
+
+inline Value print(const Value& value)
+{
+    std::cout << Type::to_string(value) << '\n';
+    return value;
 }
 
 Value evalBinary(const Node& node, Context& ctx)
@@ -131,17 +158,17 @@ Value evalBinary(const Node& node, Context& ctx)
     throw std::runtime_error("Unrecognized operation");
 }
 
-Kind match(const Node& node)
+inline Kind match(const Node& node)
 {
     return kindTable[node["kind"].GetString()];
 }
 
-BinaryOp matchOp(const Node& node)
+inline BinaryOp matchOp(const Node& node)
 {
     return binaryOpTable[node["op"].GetString()];
 }
 
-bool hasNext(const Node& node)
+inline bool hasNext(const Node& node)
 {
     auto itr = node.FindMember("next");
     if (itr != node.MemberEnd())
@@ -149,32 +176,4 @@ bool hasNext(const Node& node)
         return true;
     }
     return false;
-}
-
-Value print(const Value& val)
-{
-    std::visit(
-        [](const auto& v)
-        {
-            using T = std::decay_t<decltype(v)>;
-
-            if constexpr (std::is_same_v<T, Str>)
-            {
-                std::cout << v << '\n';
-            }
-            else if constexpr (std::is_same_v<T, Int>)
-            {
-                std::cout << v << '\n';
-            }
-            else if constexpr (std::is_same_v<T, Bool>)
-            {
-                std::cout << std::boolalpha << v << '\n';
-            }
-            else if constexpr (std::is_same_v<T, Function>)
-            {
-                std::cout << "<#closure>" << '\n';
-            }
-        },
-        val);
-    return val;
 }

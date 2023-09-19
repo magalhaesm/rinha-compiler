@@ -31,7 +31,7 @@ Function Type::Function(const Node& node, const Context& ctx)
 
         for (size_t idx = 0; idx < params.size(); ++idx)
         {
-            auto text = std::get<std::string>(params[idx]);
+            auto text = std::get< ::Str>(params[idx]);
             newCtx[text] = args[idx];
         }
 
@@ -62,4 +62,34 @@ Array getArgs(const Node& node, Context& ctx)
         arr.push_back(eval(arg, ctx));
     }
     return arr;
+}
+
+std::string Type::to_string(const ::Value& value)
+{
+    return std::visit([](const auto& v) { return Type::to_string(v); }, value);
+}
+
+inline std::string Type::to_string(const ::Str& str)
+{
+    return str;
+}
+
+inline std::string Type::to_string(const ::Int& integer)
+{
+    return std::to_string(integer);
+}
+
+inline std::string Type::to_string(const ::Bool& boolean)
+{
+    return std::to_string(boolean);
+}
+
+inline std::string Type::to_string(const ::Function&)
+{
+    return "<#closure>";
+}
+
+inline std::string Type::to_string(const ::Tuple& tuple)
+{
+    return "(" + Type::to_string(*(tuple.first)) + ", " + Type::to_string(*(tuple.second)) + ")";
 }

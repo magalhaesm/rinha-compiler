@@ -1,0 +1,67 @@
+{
+  "name": "examples/tuple.rinha",
+  "expression": {
+    "kind": "Let",
+    "name": {
+      "text": "tuple",
+      "location": {
+        "start": 4,
+        "end": 9,
+        "filename": "examples/tuple.rinha"
+      }
+    },
+    "value": {
+      "kind": "Tuple",
+      "first": {
+        "kind": "Int",
+        "value": 1,
+        "location": {
+          "start": 13,
+          "end": 14,
+          "filename": "examples/tuple.rinha"
+        }
+      },
+      "second": {
+        "kind": "Int",
+        "value": 2,
+        "location": {
+          "start": 16,
+          "end": 17,
+          "filename": "examples/tuple.rinha"
+        }
+      },
+      "location": {
+        "start": 12,
+        "end": 18,
+        "filename": "examples/tuple.rinha"
+      }
+    },
+    "next": {
+      "kind": "Print",
+      "value": {
+        "kind": "Var",
+        "text": "tuple",
+        "location": {
+          "start": 27,
+          "end": 32,
+          "filename": "examples/tuple.rinha"
+        }
+      },
+      "location": {
+        "start": 21,
+        "end": 33,
+        "filename": "examples/tuple.rinha"
+      }
+    },
+    "location": {
+      "start": 0,
+      "end": 33,
+      "filename": "examples/tuple.rinha"
+    }
+  },
+  "location": {
+    "start": 0,
+    "end": 33,
+    "filename": "examples/tuple.rinha"
+  }
+}
