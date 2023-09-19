@@ -8,7 +8,7 @@ vpath %.hpp $(INC_DIRS)
 vpath %.cpp $(SRC_DIRS)
 
 CXX      := c++
-CXXFLAGS := -Wall -Wextra -Werror -std=c++17 -g
+CXXFLAGS := -Wall -Wextra -Werror -std=c++17 -Ofast
 
 INCS := types.hpp binaryOp.hpp interpreter.hpp
 SRCS := types.cpp binaryOp.cpp interpreter.cpp main.cpp

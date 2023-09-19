@@ -1,0 +1,5 @@
+let mul = fn (n, m) => {
+  n * m
+};
+
+print("Result: " + mul(2, 5))

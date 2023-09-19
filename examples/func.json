@@ -1,0 +1,140 @@
+{
+  "name": "examples/func.rinha",
+  "expression": {
+    "kind": "Let",
+    "name": {
+      "text": "mul",
+      "location": {
+        "start": 4,
+        "end": 7,
+        "filename": "examples/func.rinha"
+      }
+    },
+    "value": {
+      "kind": "Function",
+      "parameters": [
+        {
+          "text": "n",
+          "location": {
+            "start": 14,
+            "end": 15,
+            "filename": "examples/func.rinha"
+          }
+        },
+        {
+          "text": "m",
+          "location": {
+            "start": 17,
+            "end": 18,
+            "filename": "examples/func.rinha"
+          }
+        }
+      ],
+      "value": {
+        "kind": "Binary",
+        "lhs": {
+          "kind": "Var",
+          "text": "n",
+          "location": {
+            "start": 27,
+            "end": 28,
+            "filename": "examples/func.rinha"
+          }
+        },
+        "op": "Mul",
+        "rhs": {
+          "kind": "Var",
+          "text": "m",
+          "location": {
+            "start": 31,
+            "end": 32,
+            "filename": "examples/func.rinha"
+          }
+        },
+        "location": {
+          "start": 27,
+          "end": 32,
+          "filename": "examples/func.rinha"
+        }
+      },
+      "location": {
+        "start": 10,
+        "end": 34,
+        "filename": "examples/func.rinha"
+      }
+    },
+    "next": {
+      "kind": "Print",
+      "value": {
+        "kind": "Binary",
+        "lhs": {
+          "kind": "Str",
+          "value": "Result: ",
+          "location": {
+            "start": 43,
+            "end": 53,
+            "filename": "examples/func.rinha"
+          }
+        },
+        "op": "Add",
+        "rhs": {
+          "kind": "Call",
+          "callee": {
+            "kind": "Var",
+            "text": "mul",
+            "location": {
+              "start": 56,
+              "end": 59,
+              "filename": "examples/func.rinha"
+            }
+          },
+          "arguments": [
+            {
+              "kind": "Int",
+              "value": 2,
+              "location": {
+                "start": 60,
+                "end": 61,
+                "filename": "examples/func.rinha"
+              }
+            },
+            {
+              "kind": "Int",
+              "value": 5,
+              "location": {
+                "start": 63,
+                "end": 64,
+                "filename": "examples/func.rinha"
+              }
+            }
+          ],
+          "location": {
+            "start": 56,
+            "end": 65,
+            "filename": "examples/func.rinha"
+          }
+        },
+        "location": {
+          "start": 43,
+          "end": 65,
+          "filename": "examples/func.rinha"
+        }
+      },
+      "location": {
+        "start": 37,
+        "end": 66,
+        "filename": "examples/func.rinha"
+      }
+    },
+    "location": {
+      "start": 0,
+      "end": 66,
+      "filename": "examples/func.rinha"
+    }
+  },
+  "location": {
+    "start": 0,
+    "end": 66,
+    "filename": "examples/func.rinha"
+  }
+}

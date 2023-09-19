@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <unordered_map>
 
+#include "types.hpp"
 #include "binaryOp.hpp"
 #include "interpreter.hpp"
 
@@ -10,7 +11,8 @@ std::unordered_map<std::string, Kind> kindTable = {
 
     { "Int", Kind::Int },     { "Str", Kind::Str },       { "Bool", Kind::Bool },
     { "Print", Kind::Print }, { "Binary", Kind::Binary }, { "If", Kind::If },
-    { "Let", Kind::Let },     { "Var", Kind::Var },
+    { "Let", Kind::Let },     { "Var", Kind::Var },       { "Function", Kind::Function },
+    { "Call", Kind::Call },
 };
 
 std::unordered_map<std::string, BinaryOp> binaryOpTable = {
@@ -72,12 +74,21 @@ Value eval(const Node& node, Context& ctx)
 
         ctx[name] = value;
 
-        return hasNext(node) ? eval(node["next"], ctx) : 0;
+        return hasNext(node) ? eval(node["next"], ctx) : Void;
     }
     case Kind::Var:
     {
         auto text = node["text"].GetString();
         return ctx[text];
+    }
+    case Kind::Function:
+        return Type::Function(node, ctx);
+    case Kind::Call:
+    {
+        auto fn = std::get<Function>(eval(node["callee"], ctx));
+        auto args = getArgs(node, ctx);
+
+        return fn.call(args);
     }
     }
     throw std::runtime_error("Unrecognized term");
@@ -158,6 +169,10 @@ Value print(const Value& val)
             else if constexpr (std::is_same_v<T, Bool>)
             {
                 std::cout << std::boolalpha << v << '\n';
+            }
+            else if constexpr (std::is_same_v<T, Function>)
+            {
+                std::cout << "<#closure>" << '\n';
             }
         },
         val);
