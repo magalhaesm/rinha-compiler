@@ -1,7 +1,6 @@
 #ifndef TYPES_HPP
 #define TYPES_HPP
 
-#include <cstddef>
 #include <string>
 #include <utility>
 #include <vector>
@@ -22,22 +21,42 @@ using Int = int32_t;
 using Str = std::string;
 using Bool = bool;
 
-struct Function;
+struct Closure;
+using Function = std::shared_ptr<Closure>;
 struct Tuple;
 
 using Value = std::variant<Int, Str, Bool, Function, Tuple>;
 using Context = std::unordered_map<std::string, Value>;
 using Array = std::vector<Value>;
 
-struct Function
+struct Closure
 {
     std::function<Value(Array& args)> call;
+    std::unordered_map<uint32_t, Value> cache;
+};
+
+template <>
+struct std::hash<Function>
+{
+    std::size_t operator()(const Function& fn) const noexcept
+    {
+        return reinterpret_cast<size_t>(&fn);
+    }
 };
 
 struct Tuple
 {
     std::shared_ptr<Value> first;
     std::shared_ptr<Value> second;
+};
+
+template <>
+struct std::hash<Tuple>
+{
+    std::size_t operator()(const Tuple& tuple) const noexcept
+    {
+        return reinterpret_cast<size_t>(&tuple);
+    }
 };
 
 enum class Kind
@@ -76,12 +95,13 @@ enum class BinaryOp
 
 Array getParams(const Node& node);
 Array getArgs(const Node& node, Context& ctx);
+uint32_t hashValues(Array& args);
 
 namespace Type
 {
-    int32_t Int(const Node& node);
-    std::string Str(const Node& node);
-    bool Bool(const Node& node);
+    Int Int(const Node& node);
+    Str Str(const Node& node);
+    Bool Bool(const Node& node);
     Function Function(const Node& node, const Context& ctx);
 
     std::string to_string(const ::Str& str);

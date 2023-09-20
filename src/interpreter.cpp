@@ -76,22 +76,35 @@ Value eval(const Node& node, Context& ctx)
         auto value = eval(node["value"], ctx);
 
         ctx[name] = value;
-
         return hasNext(node) ? eval(node["next"], ctx) : Void;
     }
     case Kind::Var:
     {
         auto text = node["text"].GetString();
-        return ctx[text];
+        auto value = ctx.find(text);
+        if (value != ctx.end())
+        {
+            return value->second;
+        }
+        throw std::runtime_error("Undeclared identifier: " + std::string(text));
     }
+
     case Kind::Function:
         return Type::Function(node, ctx);
     case Kind::Call:
     {
         auto fn = std::get<Function>(eval(node["callee"], ctx));
         auto args = getArgs(node, ctx);
+        uint32_t key = hashValues(args);
 
-        return fn.call(args);
+        auto value = fn->cache.find(key);
+        if (value != fn->cache.end())
+        {
+            return value->second;
+        }
+        auto result = fn->call(args);
+        fn->cache[key] = result;
+        return result;
     }
     case Kind::Tuple:
     {

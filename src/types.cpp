@@ -1,24 +1,26 @@
+#include <memory>
+
 #include "types.hpp"
 #include "interpreter.hpp"
 
-int32_t Type::Int(const Node& node)
+Int Type::Int(const Node& node)
 {
     return node["value"].GetInt();
 }
 
-std::string Type::Str(const Node& node)
+Str Type::Str(const Node& node)
 {
     return node["value"].GetString();
 }
 
-bool Type::Bool(const Node& node)
+Bool Type::Bool(const Node& node)
 {
     return node["value"].GetBool();
 }
 
 Function Type::Function(const Node& node, const Context& ctx)
 {
-    struct Function fn;
+    struct Closure fn;
     fn.call = [&](Array& args)
     {
         Context newCtx(ctx);
@@ -37,7 +39,7 @@ Function Type::Function(const Node& node, const Context& ctx)
 
         return eval(node["value"], newCtx);
     };
-    return fn;
+    return std::make_shared<Closure>(fn);
 }
 
 Array getParams(const Node& node)
@@ -62,6 +64,19 @@ Array getArgs(const Node& node, Context& ctx)
         arr.push_back(eval(arg, ctx));
     }
     return arr;
+}
+
+uint32_t hashValues(Array& args)
+{
+    std::hash<Value> value_hash;
+
+    uint32_t hash = 2166136261;
+    for (auto& val : args)
+    {
+        hash ^= value_hash(val);
+        hash *= 16777619;
+    }
+    return hash;
 }
 
 std::string Type::to_string(const ::Value& value)
