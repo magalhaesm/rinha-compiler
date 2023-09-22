@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <unordered_map>
 
+#include "error.hpp"
 #include "types.hpp"
 #include "binaryOp.hpp"
 #include "interpreter.hpp"
@@ -86,26 +87,12 @@ Value eval(const Node& node, Context& ctx)
         {
             return value->second;
         }
-        throw std::runtime_error("Undeclared identifier: " + std::string(text));
+        throw UnrecognizedIdentifier(node);
     }
-
     case Kind::Function:
         return Type::Function(node, ctx);
     case Kind::Call:
-    {
-        auto fn = std::get<Function>(eval(node["callee"], ctx));
-        auto args = getArgs(node, ctx);
-        uint32_t key = hashValues(args);
-
-        auto value = fn->cache.find(key);
-        if (value != fn->cache.end())
-        {
-            return value->second;
-        }
-        auto result = fn->call(args);
-        fn->cache[key] = result;
-        return result;
-    }
+        return evalCall(node, ctx);
     case Kind::Tuple:
     {
         return Tuple{
@@ -125,7 +112,7 @@ Value eval(const Node& node, Context& ctx)
         return *(tuple.second);
     }
     }
-    throw std::runtime_error("Unrecognized term");
+    throw UnrecognizedTerm(node);
 }
 
 inline Value print(const Value& value)
@@ -134,41 +121,74 @@ inline Value print(const Value& value)
     return value;
 }
 
-Value evalBinary(const Node& node, Context& ctx)
+inline Value evalBinary(const Node& node, Context& ctx)
 {
     auto lhs = eval(node["lhs"], ctx);
     auto rhs = eval(node["rhs"], ctx);
 
-    switch (matchOp(node))
+    try
     {
-    case BinaryOp::Add:
-        return lhs + rhs;
-    case BinaryOp::Sub:
-        return lhs - rhs;
-    case BinaryOp::Mul:
-        return lhs * rhs;
-    case BinaryOp::Div:
-        return lhs / rhs;
-    case BinaryOp::Rem:
-        return lhs % rhs;
-    case BinaryOp::Eq:
-        return lhs == rhs;
-    case BinaryOp::Neq:
-        return lhs != rhs;
-    case BinaryOp::Lt:
-        return lhs < rhs;
-    case BinaryOp::Gt:
-        return lhs > rhs;
-    case BinaryOp::Lte:
-        return lhs <= rhs;
-    case BinaryOp::Gte:
-        return lhs >= rhs;
-    case BinaryOp::And:
-        return lhs && rhs;
-    case BinaryOp::Or:
-        return lhs || rhs;
+        switch (matchOp(node))
+        {
+        case BinaryOp::Add:
+            return lhs + rhs;
+        case BinaryOp::Sub:
+            return lhs - rhs;
+        case BinaryOp::Mul:
+            return lhs * rhs;
+        case BinaryOp::Div:
+            return lhs / rhs;
+        case BinaryOp::Rem:
+            return lhs % rhs;
+        case BinaryOp::Eq:
+            return lhs == rhs;
+        case BinaryOp::Neq:
+            return lhs != rhs;
+        case BinaryOp::Lt:
+            return lhs < rhs;
+        case BinaryOp::Gt:
+            return lhs > rhs;
+        case BinaryOp::Lte:
+            return lhs <= rhs;
+        case BinaryOp::Gte:
+            return lhs >= rhs;
+        case BinaryOp::And:
+            return lhs && rhs;
+        case BinaryOp::Or:
+            return lhs || rhs;
+        }
     }
-    throw std::runtime_error("Unrecognized operation");
+    catch (const std::bad_variant_access&)
+    {
+        throw BinaryOperationError("invalid operands", node);
+    }
+    throw BinaryOperationError("unrecognized operator", node);
+}
+
+inline Value evalCall(const Node& node, Context& ctx)
+{
+    Function fn;
+    try
+    {
+        fn = std::get<Function>(eval(node["callee"], ctx));
+    }
+    catch (const std::bad_variant_access&)
+    {
+        throw UndeclaredSymbol(node);
+    };
+
+    auto args = getArgs(node, ctx);
+    uint32_t key = hashValues(args);
+
+    auto value = fn->cache.find(key);
+    if (value != fn->cache.end())
+    {
+        return value->second;
+    }
+
+    auto result = fn->call(args);
+    fn->cache[key] = result;
+    return result;
 }
 
 inline Kind match(const Node& node)

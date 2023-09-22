@@ -1,5 +1,9 @@
 #include "binaryOp.hpp"
 
+// Type::to_string e visitor
+// if 1 str: str + to_string
+// if 2 str: to_string + str
+// else int + int
 Value operator+(const Value& lhs, const Value& rhs)
 {
     if (std::holds_alternative<Int>(lhs) && std::holds_alternative<Int>(rhs))
@@ -18,7 +22,7 @@ Value operator+(const Value& lhs, const Value& rhs)
     {
         return std::get<Str>(lhs) + std::to_string(std::get<Int>(rhs));
     }
-    throw std::runtime_error("Invalid operation");
+    throw std::bad_variant_access();
 }
 
 Value operator-(const Value& lhs, const Value& rhs)
