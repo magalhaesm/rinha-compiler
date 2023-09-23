@@ -21,22 +21,22 @@ public:
     BinaryOperationError(const char* msg, const Node& node);
 };
 
-class UnrecognizedIdentifier : public GenericError
-{
-public:
-    UnrecognizedIdentifier(const Node& node);
-};
-
 class UnrecognizedTerm : public GenericError
 {
 public:
     UnrecognizedTerm(const Node& node);
 };
 
-class UndeclaredSymbol : public GenericError
+class UndeclaredIdentifier : public GenericError
 {
 public:
-    UndeclaredSymbol(const Node& node);
+    UndeclaredIdentifier(const Node& node);
+};
+
+class InvalidArguments : public GenericError
+{
+public:
+    InvalidArguments(const Node& node);
 };
 
 #endif // !ERROR_HPP

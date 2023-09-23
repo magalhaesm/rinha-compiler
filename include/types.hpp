@@ -23,6 +23,7 @@ using Bool = bool;
 
 struct Closure;
 using Function = std::shared_ptr<Closure>;
+
 struct Tuple;
 
 using Value = std::variant<Int, Str, Bool, Function, Tuple>;
@@ -93,16 +94,13 @@ enum class BinaryOp
     Or,
 };
 
-Array getParams(const Node& node);
-Array getArgs(const Node& node, Context& ctx);
-uint32_t hashValues(Array& args);
-
 namespace Type
 {
     Int Int(const Node& node);
     Str Str(const Node& node);
     Bool Bool(const Node& node);
     Function Function(const Node& node, const Context& ctx);
+    Tuple Tuple(const Node& node, Context& ctx);
 
     std::string to_string(const ::Str& str);
     std::string to_string(const ::Int& integer);

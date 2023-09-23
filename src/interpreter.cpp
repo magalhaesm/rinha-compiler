@@ -10,6 +10,9 @@
 #include "binaryOp.hpp"
 #include "interpreter.hpp"
 
+static Array getArgs(const Node& node, Context& ctx);
+static uint32_t hashValues(Array& args);
+
 std::unordered_map<std::string, Kind> kindTable = {
 
     { "Int", Kind::Int },       { "Str", Kind::Str },       { "Bool", Kind::Bool },
@@ -40,11 +43,13 @@ Document parse(const std::string& filePath)
 
     Document document;
     document.ParseStream(input);
+    file.close();
 
     if (document.HasParseError())
     {
         throw std::runtime_error("Error parsing the JSON.");
     }
+
     return document;
 }
 
@@ -59,64 +64,32 @@ Value eval(const Node& node, Context& ctx)
     case Kind::Bool:
         return Type::Bool(node);
     case Kind::Print:
-        return print(eval(node["value"], ctx));
+        return print(node, ctx);
     case Kind::Binary:
         return evalBinary(node, ctx);
     case Kind::If:
-    {
-        auto condition = std::get<Bool>(eval(node["condition"], ctx));
-        if (condition == true)
-        {
-            return eval(node["then"], ctx);
-        }
-        return eval(node["otherwise"], ctx);
-    }
+        return evalIfElse(node, ctx);
     case Kind::Let:
-    {
-        auto name = node["name"]["text"].GetString();
-        auto value = eval(node["value"], ctx);
-
-        ctx[name] = value;
-        return hasNext(node) ? eval(node["next"], ctx) : Void;
-    }
+        return evalLet(node, ctx);
     case Kind::Var:
-    {
-        auto text = node["text"].GetString();
-        auto value = ctx.find(text);
-        if (value != ctx.end())
-        {
-            return value->second;
-        }
-        throw UnrecognizedIdentifier(node);
-    }
+        return evalVar(node, ctx);
     case Kind::Function:
         return Type::Function(node, ctx);
     case Kind::Call:
         return evalCall(node, ctx);
     case Kind::Tuple:
-    {
-        return Tuple{
-
-            std::make_shared<Value>(eval(node["first"], ctx)),
-            std::make_shared<Value>(eval(node["second"], ctx))
-        };
-    }
+        return Type::Tuple(node, ctx);
     case Kind::First:
-    {
-        auto tuple = std::get<Tuple>(eval(node["value"], ctx));
-        return *(tuple.first);
-    }
+        return evalTupleFirst(node, ctx);
     case Kind::Second:
-    {
-        auto tuple = std::get<Tuple>(eval(node["value"], ctx));
-        return *(tuple.second);
-    }
+        return evalTupleSecond(node, ctx);
     }
     throw UnrecognizedTerm(node);
 }
 
-inline Value print(const Value& value)
+inline Value print(const Node& node, Context& ctx)
 {
+    auto value = eval(node["value"], ctx);
     std::cout << Type::to_string(value) << '\n';
     return value;
 }
@@ -162,33 +135,82 @@ inline Value evalBinary(const Node& node, Context& ctx)
     {
         throw BinaryOperationError("invalid operands", node);
     }
+    catch (const std::exception& e)
+    {
+        throw GenericError(e.what(), node);
+    }
     throw BinaryOperationError("unrecognized operator", node);
+}
+
+inline Value evalIfElse(const Node& node, Context& ctx)
+{
+    auto condition = std::get<Bool>(eval(node["condition"], ctx));
+    if (condition == true)
+    {
+        return eval(node["then"], ctx);
+    }
+    return eval(node["otherwise"], ctx);
+}
+
+inline Value evalLet(const Node& node, Context& ctx)
+{
+    auto name = node["name"]["text"].GetString();
+    auto value = eval(node["value"], ctx);
+
+    ctx[name] = value;
+    return hasNext(node) ? eval(node["next"], ctx) : Void;
+}
+
+inline Value evalVar(const Node& node, Context& ctx)
+{
+    auto text = node["text"].GetString();
+    auto value = ctx.find(text);
+    if (value != ctx.end())
+    {
+        return value->second;
+    }
+    throw UndeclaredIdentifier(node);
+}
+
+inline Value evalTupleFirst(const Node& node, Context& ctx)
+{
+    auto tuple = std::get<Tuple>(eval(node["value"], ctx));
+    return *(tuple.first);
+}
+
+inline Value evalTupleSecond(const Node& node, Context& ctx)
+{
+    auto tuple = std::get<Tuple>(eval(node["value"], ctx));
+    return *(tuple.second);
 }
 
 inline Value evalCall(const Node& node, Context& ctx)
 {
-    Function fn;
     try
     {
-        fn = std::get<Function>(eval(node["callee"], ctx));
+        Function fn = std::get<Function>(eval(node["callee"], ctx));
+
+        auto args = getArgs(node, ctx);
+        uint32_t key = hashValues(args);
+
+        auto value = fn->cache.find(key);
+        if (value != fn->cache.end())
+        {
+            return value->second;
+        }
+
+        auto result = fn->call(args);
+        fn->cache[key] = result;
+        return result;
     }
     catch (const std::bad_variant_access&)
     {
-        throw UndeclaredSymbol(node);
-    };
-
-    auto args = getArgs(node, ctx);
-    uint32_t key = hashValues(args);
-
-    auto value = fn->cache.find(key);
-    if (value != fn->cache.end())
-    {
-        return value->second;
+        throw UndeclaredIdentifier(node);
     }
-
-    auto result = fn->call(args);
-    fn->cache[key] = result;
-    return result;
+    catch (const std::runtime_error&)
+    {
+        throw InvalidArguments(node);
+    }
 }
 
 inline Kind match(const Node& node)
@@ -209,4 +231,29 @@ inline bool hasNext(const Node& node)
         return true;
     }
     return false;
+}
+
+inline Array getArgs(const Node& node, Context& ctx)
+{
+    auto args = node["arguments"].GetArray();
+    Array arr;
+
+    for (auto& arg : args)
+    {
+        arr.push_back(eval(arg, ctx));
+    }
+    return arr;
+}
+
+inline uint32_t hashValues(Array& args)
+{
+    std::hash<Value> value_hash;
+
+    uint32_t hash = 2166136261;
+    for (auto& val : args)
+    {
+        hash ^= value_hash(val);
+        hash *= 16777619;
+    }
+    return hash;
 }

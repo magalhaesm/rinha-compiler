@@ -1,7 +1,10 @@
 #include <memory>
 
 #include "types.hpp"
+#include "error.hpp"
 #include "interpreter.hpp"
+
+static Array getParams(const Node& node);
 
 Int Type::Int(const Node& node)
 {
@@ -28,7 +31,7 @@ Function Type::Function(const Node& node, const Context& ctx)
         auto params = getParams(node);
         if (args.size() != params.size())
         {
-            throw std::runtime_error("Invalid parameters");
+            throw std::runtime_error("");
         }
 
         for (size_t idx = 0; idx < params.size(); ++idx)
@@ -42,7 +45,19 @@ Function Type::Function(const Node& node, const Context& ctx)
     return std::make_shared<Closure>(fn);
 }
 
-Array getParams(const Node& node)
+Tuple Type::Tuple(const Node& node, Context& ctx)
+{
+    auto first = eval(node["first"], ctx);
+    auto second = eval(node["second"], ctx);
+
+    struct Tuple tuple
+    {
+        std::make_shared<Value>(first), std::make_shared<Value>(second),
+    };
+    return tuple;
+}
+
+inline Array getParams(const Node& node)
 {
     auto params = node["parameters"].GetArray();
     Array arr;
@@ -52,31 +67,6 @@ Array getParams(const Node& node)
         arr.push_back(param["text"].GetString());
     }
     return arr;
-}
-
-Array getArgs(const Node& node, Context& ctx)
-{
-    auto args = node["arguments"].GetArray();
-    Array arr;
-
-    for (auto& arg : args)
-    {
-        arr.push_back(eval(arg, ctx));
-    }
-    return arr;
-}
-
-uint32_t hashValues(Array& args)
-{
-    std::hash<Value> value_hash;
-
-    uint32_t hash = 2166136261;
-    for (auto& val : args)
-    {
-        hash ^= value_hash(val);
-        hash *= 16777619;
-    }
-    return hash;
 }
 
 std::string Type::to_string(const ::Value& value)

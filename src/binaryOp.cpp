@@ -1,9 +1,5 @@
 #include "binaryOp.hpp"
 
-// Type::to_string e visitor
-// if 1 str: str + to_string
-// if 2 str: to_string + str
-// else int + int
 Value operator+(const Value& lhs, const Value& rhs)
 {
     if (std::holds_alternative<Int>(lhs) && std::holds_alternative<Int>(rhs))
@@ -40,7 +36,7 @@ Value operator/(const Value& lhs, const Value& rhs)
     Int rhsValue = std::get<Int>(rhs);
     if (rhsValue == 0)
     {
-        throw std::runtime_error("Division by zero");
+        throw std::runtime_error("division by zero");
     }
     return std::get<Int>(lhs) / rhsValue;
 }
@@ -50,7 +46,7 @@ Value operator%(const Value& lhs, const Value& rhs)
     Int rhsValue = std::get<Int>(rhs);
     if (rhsValue == 0)
     {
-        throw std::runtime_error("Division by zero");
+        throw std::runtime_error("division by zero");
     }
     return std::get<Int>(lhs) % rhsValue;
 }

@@ -12,18 +12,8 @@ const std::string RESET = "\x1b[0m";
 
 static int getLinebreaksAt(int start, std::ifstream& file);
 
-GenericError::GenericError(const char* msg, const Node& node)
-    : m_msg(constructErrorMessage(msg, node))
-{
-}
-
 BinaryOperationError::BinaryOperationError(const char* msg, const Node& node)
     : GenericError(msg, node)
-{
-}
-
-UnrecognizedIdentifier::UnrecognizedIdentifier(const Node& node)
-    : GenericError("unrecognized identifier", node)
 {
 }
 
@@ -32,13 +22,20 @@ UnrecognizedTerm::UnrecognizedTerm(const Node& node)
 {
 }
 
-UndeclaredSymbol::UndeclaredSymbol(const Node& node)
-    : GenericError("undeclared symbol in this scope", node)
+UndeclaredIdentifier::UndeclaredIdentifier(const Node& node)
+    : GenericError("undeclared identifier in this scope", node)
 {
 }
 
-///////////////////////////////////////////////////////////////////////////////
-/// Generic Error Implementation
+InvalidArguments::InvalidArguments(const Node& node)
+    : GenericError("invalid arguments", node)
+{
+}
+
+GenericError::GenericError(const char* msg, const Node& node)
+    : m_msg(constructErrorMessage(msg, node))
+{
+}
 
 std::string GenericError::constructErrorMessage(const char* msg, const Node& node)
 {
@@ -58,7 +55,7 @@ std::string GenericError::constructErrorMessage(const char* msg, const Node& nod
         file.read(&term[0], length);
 
         std::string ctxMessage = "\n  ";
-        ctxMessage += GRAY + std::to_string(lineNum + 1) + " |  " + RESET + term;
+        ctxMessage += GRAY + std::to_string(lineNum) + " |  " + RESET + term;
 
         error_message = RED + "Error: " + RESET + msg + ctxMessage;
 
@@ -77,7 +74,7 @@ const char* GenericError::what() const throw()
     return m_msg.c_str();
 }
 
-static int getLinebreaksAt(int start, std::ifstream& file)
+int getLinebreaksAt(int start, std::ifstream& file)
 {
     char chr;
     int linebreaks = 1;
