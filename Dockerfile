@@ -11,6 +11,4 @@ WORKDIR /app
 COPY . /app
 RUN make -C /app
 
-COPY source.rinha.json /var/rinha/source.rinha.json
-
 ENTRYPOINT ["./interpreter", "/var/rinha/source.rinha.json"]
