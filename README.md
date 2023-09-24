@@ -52,7 +52,7 @@ To run this interpreter locally, you will need the following tools and libraries
 
 ## Data Preparation
 
-Before interpreting a .rinha file, you need to prepare it by parsing it into a JSON file using the Rinha parser. To obtain it, you can use Cargo, Rust's package manager, from [Crates.io](https://crates.io/crates/rinha-parser):
+Before interpreting a .rinha file, you need to prepare it by parsing it into a JSON file using the Rinha parser. To obtain it, you can use Cargo, Rust's package manager, from [Crates.io](https://crates.io/crates/rinha):
 
 ```sh
 cargo install rinha
