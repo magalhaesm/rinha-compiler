@@ -24,7 +24,7 @@ Bool Type::Bool(const Node& node)
 Function Type::Function(const Node& node, const Context& ctx)
 {
     struct Closure fn;
-    fn.call = [&](Array& args)
+    fn.call = [&node, ctx](Array& args)
     {
         Context newCtx(ctx);
 

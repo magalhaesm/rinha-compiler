@@ -53,6 +53,8 @@ Document parse(const std::string& filePath)
     return document;
 }
 
+std::unordered_map<std::string, Value> global;
+
 Value eval(const Node& node, Context& ctx)
 {
     switch (match(node))
@@ -157,7 +159,15 @@ inline Value evalLet(const Node& node, Context& ctx)
     auto name = node["name"]["text"].GetString();
     auto value = eval(node["value"], ctx);
 
-    ctx[name] = value;
+    if (node["value"]["kind"].GetString() == std::string("Function"))
+    {
+        global[name] = value;
+    }
+    else
+    {
+        ctx[name] = value;
+    }
+
     return hasNext(node) ? eval(node["next"], ctx) : Void;
 }
 
@@ -166,6 +176,12 @@ inline Value evalVar(const Node& node, Context& ctx)
     auto text = node["text"].GetString();
     auto value = ctx.find(text);
     if (value != ctx.end())
+    {
+        return value->second;
+    }
+
+    value = global.find(text);
+    if (value != global.end())
     {
         return value->second;
     }
