@@ -1,6 +1,7 @@
 #ifndef TYPES_HPP
 #define TYPES_HPP
 
+#include <cstdint>
 #include <string>
 #include <utility>
 #include <vector>
@@ -56,11 +57,13 @@ struct std::hash<Tuple>
 {
     std::size_t operator()(const Tuple& tuple) const noexcept
     {
-        return reinterpret_cast<size_t>(&tuple);
+        auto first = std::hash<Value>()(*tuple.first);
+        auto second = std::hash<Value>()(*tuple.second);
+        return first ^ (second << 1);
     }
 };
 
-enum class Kind
+enum class Kind : uint8_t
 {
     Int,
     Str,
@@ -77,7 +80,7 @@ enum class Kind
     Second
 };
 
-enum class BinaryOp
+enum class BinaryOp : uint8_t
 {
     Add,
     Sub,
@@ -103,8 +106,8 @@ namespace Type
     Tuple Tuple(const Node& node, Context& ctx);
 
     std::string to_string(const ::Str& str);
-    std::string to_string(const ::Int& integer);
-    std::string to_string(const ::Bool& boolean);
+    std::string to_string(const ::Int integer);
+    std::string to_string(const ::Bool boolean);
     std::string to_string(const ::Function&);
     std::string to_string(const ::Tuple& tuple);
     std::string to_string(const ::Value& value);

@@ -199,9 +199,8 @@ inline Value evalCall(const Node& node, Context& ctx)
             return value->second;
         }
 
-        auto result = fn->call(args);
-        fn->cache[key] = result;
-        return result;
+        fn->cache[key] = fn->call(args);
+        return fn->cache[key];
     }
     catch (const std::bad_variant_access&)
     {
@@ -245,15 +244,14 @@ inline Array getArgs(const Node& node, Context& ctx)
     return arr;
 }
 
-inline uint32_t hashValues(Array& args)
+inline uint32_t hashValues(Array& values)
 {
-    std::hash<Value> value_hash;
+    std::hash<Value> valueHasher;
 
     uint32_t hash = 2166136261;
-    for (auto& val : args)
+    for (auto& value : values)
     {
-        hash ^= value_hash(val);
-        hash *= 16777619;
+        hash ^= valueHasher(value) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
     }
     return hash;
 }
