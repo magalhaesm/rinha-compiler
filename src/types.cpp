@@ -79,14 +79,14 @@ inline std::string Type::to_string(const ::Str& str)
     return str;
 }
 
-inline std::string Type::to_string(const ::Int& integer)
+inline std::string Type::to_string(const ::Int integer)
 {
     return std::to_string(integer);
 }
 
-inline std::string Type::to_string(const ::Bool& boolean)
+inline std::string Type::to_string(const ::Bool boolean)
 {
-    return std::to_string(boolean);
+    return boolean ? "true" : "false";
 }
 
 inline std::string Type::to_string(const ::Function&)
