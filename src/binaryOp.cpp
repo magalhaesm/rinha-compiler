@@ -1,24 +1,37 @@
 #include "binaryOp.hpp"
 
+struct ValueAdditionVisitor
+{
+    Value operator()(const Int& lhs, const Int& rhs) const
+    {
+        return Int{ lhs + rhs };
+    }
+
+    Value operator()(const Str& lhs, const Str& rhs) const
+    {
+        return Str{ lhs + rhs };
+    }
+
+    Value operator()(const Int& lhs, const Str& rhs) const
+    {
+        return Str{ std::to_string(lhs) + rhs };
+    }
+
+    Value operator()(const Str& lhs, const Int& rhs) const
+    {
+        return Str{ lhs + std::to_string(rhs) };
+    }
+
+    template <typename... Types>
+    Value operator()(const Types&...) const
+    {
+        throw std::bad_variant_access();
+    }
+};
+
 Value operator+(const Value& lhs, const Value& rhs)
 {
-    if (std::holds_alternative<Int>(lhs) && std::holds_alternative<Int>(rhs))
-    {
-        return std::get<Int>(lhs) + std::get<Int>(rhs);
-    }
-    if (std::holds_alternative<Str>(lhs) && std::holds_alternative<Str>(rhs))
-    {
-        return std::get<Str>(lhs) + std::get<Str>(rhs);
-    }
-    if (std::holds_alternative<Int>(lhs) && std::holds_alternative<Str>(rhs))
-    {
-        return std::to_string(std::get<Int>(lhs)) + std::get<Str>(rhs);
-    }
-    if (std::holds_alternative<Str>(lhs) && std::holds_alternative<Int>(rhs))
-    {
-        return std::get<Str>(lhs) + std::to_string(std::get<Int>(rhs));
-    }
-    throw std::bad_variant_access();
+    return std::visit(ValueAdditionVisitor(), lhs, rhs);
 }
 
 Value operator-(const Value& lhs, const Value& rhs)
@@ -51,14 +64,38 @@ Value operator%(const Value& lhs, const Value& rhs)
     return std::get<Int>(lhs) % rhsValue;
 }
 
+struct ValueEqualityVisitor
+{
+    bool operator()(const Int& lhs, const Int& rhs) const
+    {
+        return lhs == rhs;
+    }
+
+    bool operator()(const Str& lhs, const Str& rhs) const
+    {
+        return lhs == rhs;
+    }
+
+    bool operator()(const Bool& lhs, const Bool& rhs) const
+    {
+        return lhs == rhs;
+    }
+
+    template <typename T, typename U>
+    bool operator()(const T&, const U&) const
+    {
+        throw std::bad_variant_access();
+    }
+};
+
 Value operator==(const Value& lhs, const Value& rhs)
 {
-    return std::get<Int>(lhs) == std::get<Int>(rhs);
+    return std::visit(ValueEqualityVisitor(), lhs, rhs);
 }
 
 Value operator!=(const Value& lhs, const Value& rhs)
 {
-    return std::get<Int>(lhs) != std::get<Int>(rhs);
+    return !std::visit(ValueEqualityVisitor(), lhs, rhs);
 }
 
 Value operator<(const Value& lhs, const Value& rhs)

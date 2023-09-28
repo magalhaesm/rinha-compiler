@@ -13,6 +13,8 @@
 static Array getArgs(const Node& node, Context& ctx);
 static uint32_t hashValues(Array& args);
 
+std::unordered_map<std::string, Value> global;
+
 std::unordered_map<std::string, Kind> kindTable = {
 
     { "Int", Kind::Int },       { "Str", Kind::Str },       { "Bool", Kind::Bool },
@@ -52,8 +54,6 @@ Document parse(const std::string& filePath)
 
     return document;
 }
-
-std::unordered_map<std::string, Value> global;
 
 Value eval(const Node& node, Context& ctx)
 {
